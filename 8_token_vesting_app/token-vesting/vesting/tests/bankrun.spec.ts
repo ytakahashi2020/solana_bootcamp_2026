@@ -54,17 +54,18 @@ describe('Vesting Smart Contract Tests', () => {
 
     program = new Program<Vesting>(IDL as Vesting, provider)
 
-    banksClient = context.banksClient
-
     employer = provider.wallet.payer
+
+    banksClient = context.banksClient
 
     // Create a new mint
     // @ts-ignore
     mint = await createMint(banksClient, employer, employer.publicKey, null, 2)
 
     // Generate a new keypair for the beneficiary
-    beneficiaryProvider = new BankrunProvider(context)
-    beneficiaryProvider.wallet = new NodeWallet(beneficiary)
+    // beneficiaryProvider = new BankrunProvider(context)
+    // beneficiaryProvider.wallet = new NodeWallet(beneficiary)
+    beneficiaryProvider = new BankrunProvider(context, new NodeWallet(beneficiary))
 
     program2 = new Program<Vesting>(IDL as Vesting, beneficiaryProvider)
 
@@ -143,11 +144,11 @@ describe('Vesting Smart Contract Tests', () => {
     const tx3 = await program2.methods
       .claimTokens(companyName)
       .accounts({
-        beneficiary: beneficiary.publicKey,
-        employeeAccount,
-        vestingAccount: vestingAccountKey,
-        mint,
-        treasuryTokenAccount,
+        // beneficiary: beneficiary.publicKey,
+        // employeeAccount,
+        // vestingAccount: vestingAccountKey,
+        // mint,
+        // treasuryTokenAccount,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc({ commitment: 'confirmed' })

@@ -46,17 +46,23 @@ pub mod vesting {
 
     pub fn claim_tokens(ctx: Context<ClaimTokens>, _company_name: String) -> Result<()> {
         let employee_account = &mut ctx.accounts.employee_account;
+
         let now = Clock::get()?.unix_timestamp;
+
 
         // Check if the current time is before the cliff time
         if now < employee_account.cliff_time {
             return Err(ErrorCode::ClaimNotAvailableYet.into());
         }
+        
         // Calculate the vested amount
         let time_since_start = now.saturating_sub(employee_account.start_time);
+
         let total_vesting_time = employee_account.end_time.saturating_sub(
             employee_account.start_time
         );
+
+
         let vested_amount = if now >= employee_account.end_time {
             employee_account.total_amount
         } else {
@@ -69,6 +75,7 @@ pub mod vesting {
         if claimable_amount == 0 {
             return Err(ErrorCode::NothingToClaim.into());
         }
+
         let transfer_cpi_accounts = TransferChecked {
             from: ctx.accounts.treasury_token_account.to_account_info(),
             mint: ctx.accounts.mint.to_account_info(),
@@ -88,6 +95,8 @@ pub mod vesting {
         );
         let decimals = ctx.accounts.mint.decimals;
         token_interface::transfer_checked(cpi_context, claimable_amount as u64, decimals)?;
+
+        
         employee_account.total_withdrawn += claimable_amount;
         Ok(())
     }
