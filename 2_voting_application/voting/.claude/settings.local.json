@@ -11,7 +11,9 @@
       "Bash(solana program deploy:*)",
       "Bash(solana:*)",
       "Bash(anchor --version:*)",
-      "Bash(anchor test:*)"
+      "Bash(anchor test:*)",
+      "Bash(yarn install:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
