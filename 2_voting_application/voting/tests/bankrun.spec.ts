@@ -8,7 +8,6 @@ import { startAnchor } from "solana-bankrun";
 import { BankrunProvider } from "anchor-bankrun";
 
 // IDL は anchor build 後に生成される
-// (パスはプロジェクト構成に合わせて調整)
 import idl from "../target/idl/voting.json" with { type: "json" };
 
 describe("voting (bankrun)", () => {
@@ -46,10 +45,7 @@ describe("voting (bankrun)", () => {
     );
   }
 
-  function findCandidatePda(
-    pollId: BN,
-    candidateId: BN
-  ): [PublicKey, number] {
+  function findCandidatePda(pollId: BN, candidateId: BN): [PublicKey, number] {
     const seedPollId = pollId.toArrayLike(Buffer, "le", 8);
     const seedCandidateId = candidateId.toArrayLike(Buffer, "le", 8);
     return PublicKey.findProgramAddressSync(
@@ -142,16 +138,10 @@ describe("voting (bankrun)", () => {
     // 現在時刻を基準に、過去から未来までの範囲を設定
     const now = Math.floor(Date.now() / 1000);
     const votingStart = u64(now - 3600); // 1時間前
-    const votingEnd = u64(now + 3600);   // 1時間後
+    const votingEnd = u64(now + 3600); // 1時間後
 
     await program.methods
-      .initializePoll(
-        pollId,
-        "Best DEX",
-        "Vote",
-        votingStart,
-        votingEnd
-      )
+      .initializePoll(pollId, "Best DEX", "Vote", votingStart, votingEnd)
       .accounts({
         payer: provider.wallet.publicKey,
         pollAccount: pollPda,
