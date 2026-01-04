@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(anchor deploy)",
+      "Bash(solana config:*)",
+      "Bash(solana-test-validator:*)",
+      "Bash(curl:*)",
+      "Bash(solana balance:*)",
+      "Bash(solana program show:*)",
+      "Bash(solana-keygen pubkey:*)",
+      "Bash(solana program deploy:*)",
+      "Bash(solana:*)",
+      "Bash(anchor --version:*)",
+      "Bash(anchor test:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
