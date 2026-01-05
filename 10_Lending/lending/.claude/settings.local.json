@@ -8,7 +8,8 @@
       "Bash(solana-install update:*)",
       "Bash(~/.local/share/solana/install/active_release/bin/solana-install update:*)",
       "Bash(/Users/ytakahashi/.local/share/solana/install/active_release/bin/agave-install update:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
