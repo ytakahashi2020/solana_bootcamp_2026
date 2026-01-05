@@ -4,98 +4,93 @@ use anchor_lang::prelude::*;
 // automatically when you build the project.
 declare_id!("AJuvFF7KaLxX2CodX1CFrU8xFw8PvenTU6H6CAqB83Xk");
 
+const ANCHOR_DISCRIMINATOR: usize = 8;
+
 #[program]
-mod journal {
+pub mod crud {
     use super::*;
 
-    pub fn create_journal_entry(
-        ctx: Context<CreateEntry>,
-        title: String,
-        message: String,
-    ) -> Result<()> {
-        msg!("Journal Entry Created");
-        msg!("Title: {}", title);
-        msg!("Message: {}", message);
-
-        let journal_entry = &mut ctx.accounts.journal_entry;
-        journal_entry.owner = ctx.accounts.owner.key();
-        journal_entry.title = title;
-        journal_entry.message = message;
+    pub fn create_memo(ctx: Context<CreateMemo>, memo_id: u64, title: String, message: String) -> Result<()> {
+        ctx.accounts.memo.set_inner(Memo {
+            memo_id,
+            owner: ctx.accounts.user.key(),
+            title,
+            message,
+        });
+        Ok(())
+    }
+    pub fn update_memo(ctx: Context<UpdateMemo>, memo_id: u64, title: String, message: String) -> Result<()> {
+        ctx.accounts.memo.set_inner(Memo {
+            memo_id,
+            owner: ctx.accounts.user.key(),
+            title,
+            message,
+        });
         Ok(())
     }
 
-    pub fn update_journal_entry(
-        ctx: Context<UpdateEntry>,
-        title: String,
-        message: String,
-    ) -> Result<()> {
-        msg!("Journal Entry Updated");
-        msg!("Title: {}", title);
-        msg!("Message: {}", message);
-
-        let journal_entry = &mut ctx.accounts.journal_entry;
-        journal_entry.message = message;
-
-        Ok(())
-    }
-
-    pub fn delete_journal_entry(_ctx: Context<DeleteEntry>, title: String) -> Result<()> {
-        msg!("Journal entry titled {} deleted", title);
+    pub fn delete_memo(_ctx: Context<DeleteMemo>, memo_id: u64) -> Result<()> {
+        msg!("Memo deleted: {}", memo_id);
         Ok(())
     }
 }
+
+
+#[derive(Accounts)]
+#[instruction(memo_id: u64)]
+pub struct CreateMemo<'info> {
+    #[account(
+        init, 
+        payer = user, 
+        space = ANCHOR_DISCRIMINATOR + Memo::INIT_SPACE,
+        seeds = [b"memo", memo_id.to_le_bytes().as_ref(), user.key().as_ref()],
+        bump
+    )]
+    pub memo: Account<'info, Memo>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(memo_id: u64, title: String, message: String)]
+pub struct UpdateMemo<'info> {
+    #[account(mut, 
+        seeds = [b"memo", memo_id.to_le_bytes().as_ref(), user.key().as_ref()], 
+        bump,
+        // 8: memo_id, 32: owner, 4: Stringの先頭の長さ情報
+        realloc = ANCHOR_DISCRIMINATOR + 8 +  32 + 4 + title.len()  + 4 + message.len(),
+        realloc::payer = user,
+        realloc::zero = true,
+    )]
+    pub memo: Account<'info, Memo>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(memo_id: u64)]
+pub struct DeleteMemo<'info> {
+    #[account(mut, 
+        seeds = [b"memo", memo_id.to_le_bytes().as_ref(), user.key().as_ref()], 
+        bump,
+        close = user,
+    )]
+    pub memo: Account<'info, Memo>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 
 #[account]
-pub struct JournalEntryState {
-    pub owner: Pubkey,
+#[derive(InitSpace)]
+pub struct Memo {
+    pub memo_id: u64,
+    pub owner: Pubkey, 
+    #[max_len(32)]
     pub title: String,
-    pub message: String,
-}
-
-#[derive(Accounts)]
-#[instruction(title: String, message: String)]
-pub struct CreateEntry<'info> {
-    #[account(
-        init,
-        seeds = [title.as_bytes(), owner.key().as_ref()], 
-        bump, 
-        payer = owner, 
-        space = 8 + 32 + 4 + title.len() + 4 + message.len()
-    )]
-    pub journal_entry: Account<'info, JournalEntryState>,
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(title: String, message: String)]
-pub struct UpdateEntry<'info> {
-    #[account(
-        mut,
-        seeds = [title.as_bytes(), owner.key().as_ref()], 
-        bump, 
-        realloc = 8 + 32 + 4 + title.len() + 4 + message.len(),
-        realloc::payer = owner, 
-        realloc::zero = true, 
-    )]
-    pub journal_entry: Account<'info, JournalEntryState>,
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(title: String)]
-pub struct DeleteEntry<'info> {
-    #[account( 
-        mut, 
-        seeds = [title.as_bytes(), owner.key().as_ref()], 
-        bump, 
-        close= owner,
-    )]
-    pub journal_entry: Account<'info, JournalEntryState>,
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    pub system_program: Program<'info, System>,
+    #[max_len(280)]
+    pub message: String
 }
