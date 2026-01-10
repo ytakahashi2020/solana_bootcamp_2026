@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(anchor build:*)",
+      "Bash(cargo clean:*)",
+      "Bash(cargo update:*)",
+      "Bash(rustc:*)",
+      "Bash(solana --version:*)",
+      "Bash(anchor:*)",
+      "Bash(~/.local/share/solana/install/active_release/bin/sdk/sbf/dependencies/platform-tools/rust/bin/cargo --version)",
+      "Bash(agave-install update:*)",
+      "Bash(cargo build-sbf:*)",
+      "Bash(yarn install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
